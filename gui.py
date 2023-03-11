@@ -125,7 +125,8 @@ def run_period_input_window(date_values=None) -> dict:
     '''
     rus_month_names = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль',
                        'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']  # for interface
-    mth_num, mth, yr = date.today().month, rus_month_names[date.today().month - 1], date.today().year  # get today's date
+    # get today's date
+    mth_num, mth, yr = date.today().month, rus_month_names[date.today().month - 1], date.today().year
     # creating a new window with the following layout
     date_input_layout = [
         [sg.Text('Введите период, за который необходимо составить отчетность')],
@@ -157,7 +158,7 @@ def run_save_window(report: fpdf.FPDF):
             auto_size_button=True,
             key='-SAVE_FILE_PATH-'
         )],
-        [sg.B('Сохранить файл', key='-SAVE-'), sg.Button('Печать', key='-PRINT-')]
+        [sg.B('Сохранить файл', key='-SAVE-')]
     ]
     save_window = sg.Window(title='Отчет составлен', layout=save_window_layout)
     while True:
@@ -171,10 +172,6 @@ def run_save_window(report: fpdf.FPDF):
                 report.output(values['-STRING_PATH-'])
                 sg.popup('Отчет сохранен в\n' + values['-STRING_PATH-'], title='Сохранено')
                 break
-        if event == '-PRINT-':
-            report.output('temp/res.pdf')
-            os.startfile(os.path.relpath('temp/res.pdf'), 'print')
-            break
     save_window.close()
 
 
@@ -185,7 +182,7 @@ def run_new_school_window():
         [sg.T('Введите информацию в таком же виде, как в отчете')],
         [sg.T('Название'), sg.P(), sg.In(key='school_name')],
         [sg.T('Директор'), sg.P(), sg.In(key='head_name')],
-        [sg.T('Бухгалтер'), sg.P(), sg.In(key='accountant')],
+        [sg.T('Составитель отчета'), sg.P(), sg.In(key='accountant')],
         [sg.B('Сохранить'), sg.B('Отмена')]
     ]
     ns_window = sg.Window(title='Новое учреждение', layout=ns_layout, modal=True)

@@ -5,7 +5,6 @@ import loader_saver as ls
 
 
 def main():
-    # TODO: extensively test (hell yeah I am putting it broadly)
     sg.theme('Purple')
 
     est_list = ls.get_establishment_list('est_list.json')
@@ -13,8 +12,8 @@ def main():
     est_names.append('Новое учреждение...')
 
     top_layout = [
-        [sg.P(), sg.T('Расчет расходов на платные услуги', font='default 14 bold'), sg.P()],
-        [sg.T('Пожалуйста, введите все данные, затем нажмите на кнопку "Печатать"')],
+        [sg.P(), sg.T('Расчет расходов по платным услугам', font='default 14 bold'), sg.P()],
+        [sg.T('Пожалуйста, введите все данные, затем нажмите на кнопку "Печать"')],
         [sg.T('Учреждение'), sg.P(), sg.Combo(est_names, size=43, key='-EST_NAME-', enable_events=True)],
         [sg.T('Директор'), sg.P(), sg.In(size=45, key='-HEAD_NAME-')],
         [sg.T('Месяц'), sg.P(), sg.T('', visible=False, key='-PERIOD-'), sg.P(),
@@ -49,7 +48,7 @@ def main():
                            [sg.P(), col_top, sg.P()],
                            [sg.HorizontalSeparator()],
                            [col1, sg.VSeparator(), col2],
-                           [sg.B('Печатать', key='-SAVE-'), sg.B('Выйти', key='-EXIT-')]
+                           [sg.B('Печать', key='-SAVE-'), sg.B('Выйти', key='-EXIT-')]
                        ])
 
     date_values = None  # to save the period of the report
@@ -71,6 +70,11 @@ def main():
                 ns_data = gui.run_new_school_window()
                 if ns_data is None:
                     window['-EST_NAME-'].update(value='')
+                    for field in values.keys():
+                        try:
+                            window[field].update(value='')
+                        except Exception:
+                            pass
                     continue
                 else:
                     curr_est = ls.Establishment(
@@ -90,6 +94,11 @@ def main():
             window['-CLUB_NAME-'].update(values=club_names, disabled=False)
             window['-HEAD_NAME-'].update(value=curr_est.head_name)
             window['-SIGNATURE_NAME-'].update(value=curr_est.accountant)
+
+            # flushes any information on the clubs, if any was entered
+            for field in ('-TEACHER_NAME-', '-IN_TOTAL-', '-IN_LABOUR-', '-IN_TEACHER-', '-IN_ADMIN-',
+                          '-IN_TRANSFERS-', '-IN_INDIRECT-', '-IN_TOTAL-', '-IN_REV-'):
+                window[field].update(value='')
             window.refresh()
 
         if event == '-CLUB_NAME-':  # the user has chosen the club from the list
@@ -102,6 +111,7 @@ def main():
                     curr_club = ls.Club(name=c_name, teacher_name='')
                     club_names.insert(-1, c_name)
                     curr_est.club_list.append(curr_club)
+                    club_index = len(curr_est.club_list) - 1
                     window['-CLUB_NAME-'].update(value=c_name, values=club_names)
             else:
                 club_index = club_names.index(values['-CLUB_NAME-'])
@@ -199,7 +209,7 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    except:
+    except Exception as e:
         import traceback
         sg.popup_ok('Извините, произошла чудовищная ошибка. Программа не может выполняться дальше.\nПожалуйста, '
                     'покажите скрин этого сообщения,'
