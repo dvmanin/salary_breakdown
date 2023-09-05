@@ -1,6 +1,5 @@
 import fpdf
 from fpdf import FPDF
-import os
 
 
 def get_school_year(month_num: int, year: int) -> tuple:
@@ -60,7 +59,7 @@ def create_table(rev: float, labour_expenses: float, labour_tax_free: float,
     return res
 
 
-def create_report(est: str, head: str, club: str, teacher: str,
+def create_report(est: str, head_title: str, head: str, club: str, teacher: str,
                   period: dict, data: tuple, accountant: str) -> fpdf.FPDF:
     b = 0  # to test with borders
     # setting up the pdf document
@@ -76,7 +75,7 @@ def create_report(est: str, head: str, club: str, teacher: str,
     # printing the top right corner ('Confirmed by headmaster(name) etc.')
     pdf.set_xy(113, 25)
     pdf.cell(w=72, h=5, txt='Утверждаю', new_x='LEFT', new_y='NEXT', border=b)
-    pdf.multi_cell(w=72, h=5, txt='\nзаведующий ' + est, new_x='LEFT', new_y='NEXT', border=b)
+    pdf.multi_cell(w=72, h=5, txt=f'\n{head_title.lower()} ' + est, new_x='LEFT', new_y='NEXT', border=b)
     pdf.cell(w=72, h=5, txt='', new_x='LEFT', new_y='NEXT', border=b)
     pdf.cell(w=36, h=5, txt='_' * 17 + '/', new_x='RIGHT', new_y='TOP', border=b)
     pdf.cell(w=36, h=5, txt=head if head is not None and len(head) > 0 else '_' * 15, new_x='LEFT', new_y='NEXT',
@@ -110,7 +109,7 @@ def create_report(est: str, head: str, club: str, teacher: str,
             if isinstance(datum, float):  # formatting the numbers so that they look cool
                 align_number_to_right = True
                 if datum > 1:
-                    datum = ('%.2f' % datum).replace('.', ',')
+                    datum = f'{datum:,.2f}'.replace(',', ' ').replace('.', ',')
                 else:
                     datum = '%.0f' % (datum * 100) + '%'
 
@@ -134,40 +133,5 @@ def create_report(est: str, head: str, club: str, teacher: str,
     return pdf
 
 
-if __name__ == '__main__':  # for testing (I know this is a suboptimal way)
-
-    # the following data is for development and testing
-    # ----------------------------------------------------
-    est = 'МБДОУ Д/с № 14 "Журавлик" ГО "город Якутск"'
-    head = 'Герасимова Л. Н.'
-    period = {'-MONTH-': 'сентябрь', '-MONTH_NUM-': 9, '-YEAR-': 2022}
-    teacher = 'Александрова Наталия Павловна'
-    accountant = 'Иванова М. П.'
-    club = '"ИЗО деятельность"'
-    rev = 27566.
-    lab_exp_ratio = 0.703476395689126
-    teach_sal_ratio = 0.869559278819887
-    admin_sal_ratio = 0.150007853814336
-    trans_lab_costs = 0.302000000000000
-    indir_cost_ratio = 0.296523678109515
-    admin_percs = {'заведующий': [5.0002617938112 / 100],
-                   'старший воспитатель': [5.0002617938112 / 100],
-                   'специалист по кадрам': [5.0002617938112 / 100]}
-
-    labour_expenses = rev * lab_exp_ratio
-    labour_tax_free = labour_expenses / 1.302
-    teacher_salary = labour_tax_free * teach_sal_ratio
-    for key, value in admin_percs.items():
-        admin_percs[key].append(teacher_salary * value[0])
-    labour_tax = labour_tax_free * 0.302
-    indirect_costs = rev * indir_cost_ratio
-    # ------------------------------------------------------
-    # end of test data
-
-    data = create_table(rev, labour_expenses, labour_tax_free,
-                        teacher_salary, admin_percs, labour_tax, indirect_costs,
-                        lab_exp_ratio, teach_sal_ratio, indir_cost_ratio)
-
-    report = create_report(est, head, club, teacher, period, data, accountant)
-    report.output('output/res.pdf')  # saves the pdf file
-    os.startfile(os.path.relpath('output/res.pdf'))  # opens pdf file with default program
+if __name__ == '__main__':
+    pass

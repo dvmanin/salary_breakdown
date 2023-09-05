@@ -12,19 +12,28 @@ class Club:
     def __init__(self, name='', teacher_name='',
                  period_revenue=0.0,
                  total_expenses=0.0, labour_expenses=0.0, teacher_salary=0.0,
-                 admin_salary=0.0, transfers_labour=0.0, indirect_costs=0.0):
+                 admin_salary=0.0, transfers_labour=0.0, indirect_costs=0.0,
+                 transfer_admin_to_indir=None, admin_breakdown=None):
         self.name = name
         self.teacher_name = teacher_name
         self.period_revenue = period_revenue
-        self.admin_breakdown = None
+        self.admin_breakdown = admin_breakdown
+        self.ab_saving_copy = {key: value.copy() for key, value in admin_breakdown.items()} if admin_breakdown is not None else None
+        self.transfer_admin_to_indir = transfer_admin_to_indir
 
         # все 6 показателей расходов со страницы "расчет экономистов" (по умолчанию 0)
         self.total_expenses = total_expenses  # расходы учреждения
+        self.te_save = total_expenses
         self.labour_expenses = labour_expenses  # расходы на оплату труда
+        self.le_save = labour_expenses
         self.teacher_salary = teacher_salary  # оплата труда педагог
+        self.ts_save = teacher_salary
         self.admin_salary = admin_salary  # оплата труда АУП
+        self.as_save = admin_salary
         self.transfers_labour = transfers_labour  # начисления на оплату труда
+        self.tl_save = transfers_labour
         self.indirect_costs = indirect_costs  # косвенные затраты
+        self.ic_save = indirect_costs
 
         # все 5 долей расходов со страницы "расчет экономистов" (по умолчанию 0.0)
         self.lab_exp_ratio = 0.0  # расходы на оплату труда
@@ -64,17 +73,16 @@ class Club:
         assert self.total_expenses > 0
         self.indir_cost_ratio = self.indirect_costs / self.total_expenses
 
-    def get_info_for_report(self, admin_breakdown=None, transfer_admin_to_indir=None):
+    def get_info_for_report(self):
         # разбивка оплаты труда АУП по категориям (вводится пользователем)
-        if transfer_admin_to_indir:
-            amount_transferred = (admin_breakdown['В фонд учреждения'][0] /
-                                  sum([v[0] for v in admin_breakdown.values()])) * self.admin_salary
+        if self.transfer_admin_to_indir:
+            amount_transferred = (self.admin_breakdown['В фонд учреждения'][0] /
+                                  sum([v[0] for v in self.admin_breakdown.values()])) * self.admin_salary
             self.admin_salary -= amount_transferred
             self.labour_expenses = self.teacher_salary + self.admin_salary
             self.transfers_labour = self.labour_expenses * 0.302
             self.indirect_costs += amount_transferred * 1.302
-            admin_breakdown.pop('В фонд учреждения', None)
-        self.admin_breakdown = admin_breakdown
+            self.admin_breakdown.pop('В фонд учреждения', None)
 
         # подсчет всех долей
         self.calc_lab_exp_ratio()
@@ -101,10 +109,12 @@ class Establishment:
     Contains (a) name of a school; (b) headmaster/accountant names; (c) list of all known clubs.
     '''
     def __init__(self, name='',
+                 head_title='',
                  head_name='',
                  accountant='',
                  club_list=None):
         self.name = name
+        self.head_title = head_title
         self.head_name = head_name
         self.accountant = accountant
         self.club_list = club_list
@@ -118,15 +128,18 @@ class EstEncoder(json.JSONEncoder):
         if isinstance(est, Establishment):
             return {'__est__': True,
                     'est_name': est.name,
+                    'head_title': est.head_title,
                     'head_name': est.head_name,
                     'accountant': est.accountant,
                     'club_list': {club.name: (club.teacher_name,
-                                              club.total_expenses,
-                                              club.labour_expenses,
-                                              club.teacher_salary,
-                                              club.admin_salary,
-                                              club.transfers_labour,
-                                              club.indirect_costs)
+                                              club.te_save,
+                                              club.le_save,
+                                              club.ts_save,
+                                              club.as_save,
+                                              club.tl_save,
+                                              club.ic_save,
+                                              club.transfer_admin_to_indir,
+                                              club.ab_saving_copy)
                                   for club in est.club_list}
                     }
         else:
@@ -142,6 +155,7 @@ def decode_est(obj):
     '''
     if '__est__' in obj and obj['__est__']:
         return Establishment(name=obj['est_name'],
+                             head_title=obj['head_title'],
                              head_name=obj['head_name'],
                              accountant=obj['accountant'],
                              club_list=[Club(name=name,
@@ -151,7 +165,9 @@ def decode_est(obj):
                                              teacher_salary=info[3],
                                              admin_salary=info[4],
                                              transfers_labour=info[5],
-                                             indirect_costs=info[6])
+                                             indirect_costs=info[6],
+                                             transfer_admin_to_indir=info[7],
+                                             admin_breakdown=info[8])
                                         for name, info in obj['club_list'].items()])
     return obj
 
@@ -186,33 +202,3 @@ def save_establishment_list(filepath: str, est_list: list):
 
 if __name__ == '__main__':
     pass
-
-    # c = Club(name='ИЗО деятельность',
-    #          teacher_name='Александрова Наталия Павловна',
-    #          total_expenses=81302.31,
-    #          labour_expenses=45838.,
-    #          teacher_salary=38198.,
-    #          admin_salary=7640.,
-    #          transfers_labour=13843.08,
-    #          indirect_costs=21621.24)
-    #
-    # x = Establishment('МБДОУ Д/с № 14 "Журавлик" ГО "город Якутск"',
-    #                   'Герасимова Л.Н.',
-    #                   'Иванова М.П.',
-    #                   [c])
-    #
-    # est_list = [x]
-    #
-    # with open('est_list.json', 'w') as output_file:
-    #     json.dump(est_list, output_file, cls=EstEncoder, indent='\t')
-
-    # with open('est_list.json', 'r') as input_file:
-    #     ass = json.load(input_file, object_hook=decode_est)
-    #
-    # print(ass)
-    # print(type(ass), len(ass))
-    # print(ass[0].name)
-    # print(ass[0].head_name)
-    # print(ass[0].accountant)
-    # print(ass[0].club_list)
-
