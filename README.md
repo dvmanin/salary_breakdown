@@ -11,23 +11,27 @@ Fairly simple:
 1) The program starts with an input window. The user picks an organisation from the drop-off list
 (the list of orgs is read from a JSON file in the same folder), or creates a new one.
 
-   <img height="300" src="C:\Users\multi\Documents\маме\choosingSchool.png" width="350"/>
+   <img width="350" alt="choosingSchool" src="https://github.com/dvmanin/salary_breakdown/assets/86629356/0be98483-d1ae-4f13-8e86-666f6ed9f619">
+
 2) Once an organisation is chosen, the program automatically fills the input fields from the information 
 stored in the JSON file. The field for choosing a club also becomes active (a drop-off list). The user chooses
 a club to work with from the list or creates a new one. Once a club is chosen, all the relevant input fields
 are automatically filled with the information from the JSON file.
 
-   <img height="300" src="C:\Users\multi\Documents\маме\choosingClub.png" width="350"/>
+   <img width="350" alt="choosingClub" src="https://github.com/dvmanin/salary_breakdown/assets/86629356/a4c26e40-03c0-4a3d-9df4-345f01979fbd">
+
 3) Now the user has an opportunity to change the information (e.g. if the headmaster for the school has changed, 
 new expense data has been calculated, etc.). If everything's correct, the user presses the 'Save' button.
 
-   <img height="300" src="C:\Users\multi\Documents\маме\allFilled.png" width="350"/>
+   <img width="350" alt="allFilled" src="https://github.com/dvmanin/salary_breakdown/assets/86629356/b83c2e9c-d727-4c19-a266-386c92995ddf">
+
 4) Once the 'Save' button is pressed, all the information is taken to generate a PDF of the report. At the same time,
 all the saved data is saved/updated in the JSON file.
 5) In a separate window, the user chooses where to save the PDF file (below is the sample report). Once it is saved, the save window closes.
 
-   <img title="Sample Report PDF" height="596" width="420" src="C:\Users\multi\Documents\маме\sample_report-1.png"/>
-6) The main window is still open in case the user wants to generate another report/change the information entered.
+   <img width="420" alt="sampleReport" src="https://github.com/dvmanin/salary_breakdown/assets/86629356/a46a88e5-fc41-4479-b018-bb5122186cd0">
+
+7) The main window is still open in case the user wants to generate another report/change the information entered.
 The user exits the program either by pressing the 'Quit' button or the X in the top-right corner.
 
 There's also a menu that only runs the numbers (without any input on club/school names, etc.) and outputs
